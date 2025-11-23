@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>calis rng</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Balthazar:wght@400;700&display=swap');
+
+      body {
+        font-family: 'Courier New', monospace;
+        margin: 0;
+        padding: 0;
+        background: black;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .game-container {
+        background: #2c2c2c;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        min-width: 350px;
+        max-width: 850px;
+      }
+
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #000000;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+      }
+
+      button:disabled {
+        background-color: #555;
+        cursor: not-allowed;
+      }
+
+      button:hover:not(:disabled) {
+        background-color: #00aaff;
+      }
+
+      #results {
+        margin-top: 20px;
+        white-space: pre-line;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 5px;
+        min-height: 100px;
+        font-family: 'Courier New', monospace;
+      }
+
+      .bold {
+        font-weight: 700;
+      }
+
+      .roll-line {
+        margin: 5px 0;
+      }
+
+      .rank-button {
+        background: none;
+        border: 4px solid #ffffff;
+        color: inherit;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        transition: all 0.2s;
+        display: inline;
+      }
+
+      .rank-button:hover {
+        background-color: rgba(40, 167, 69, 0.2);
+        border-color: #34d058;
+      }
+
+      .rank-button.accepted {
+        opacity: 0.3;
+        cursor: default;
+        border-color: #555;
+      }
+
+      .rank-button.accepted:hover {
+        background: none;
+        border-color: #555;
+      }
+
+      .inventory-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .inventory-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .inventory-slot {
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid #555;
+        border-radius: 5px;
+        padding: 10px;
+        min-height: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .inventory-slot:hover {
+        background: rgba(0, 0, 0, 0.5);
+        border-color: #888;
+      }
+
+      .inventory-slot.empty {
+        cursor: default;
+        opacity: 0.5;
+      }
+
+      .inventory-slot.empty:hover {
+        background: rgba(0, 0, 0, 0.3);
+        border-color: #555;
+      }
+
+      .slot-variants {
+        font-size: 10px;
+        margin-bottom: 3px;
+        color: #ffd700;
+      }
+
+      .slot-value {
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+
+      .slot-rank {
+        font-size: 11px;
+        opacity: 0.8;
+      }
+      
+        .roll-counter {
+        margin-bottom: 15px;
+        font-size: 18px;
+        color: #d4af37;
+      }
+
+      #toggleMerchant {
+        background-color: #4ade80;
+        color: #000;
+      }
+
+      #toggleMerchant:hover {
+        background-color: #5ef090;
+      }
+
+      #toggleItemInventory {
+        background-color: #a855f7;
+      }
+
+      #toggleItemInventory:hover {
+        background-color: #b865ff;
+      }
+ 
+      .item-inventory-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .item-slot {
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid #a855f7;
+        border-radius: 5px;
+        padding: 10px;
+        min-height: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .item-slot:hover {
+        background: rgba(0, 0, 0, 0.5);
+        border-color: #b865ff;
+      }
+
+      .item-slot.empty {
+        cursor: default;
+        opacity: 0.5;
+      }
+
+      .item-slot.empty:hover {
+        background: rgba(0, 0, 0, 0.3);
+        border-color: #a855f7;
+      }
+
+      .item-name {
+        font-weight: 700;
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+
+      .item-multiplier {
+        font-size: 10px;
+        color: #ffd700;
+      }
+
+      .merchant-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .merchant-timer {
+        font-size: 16px;
+        color: #4ade80;
+        margin-bottom: 15px;
+      }
+
+      .merchant-items {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .merchant-item {
+        background: rgba(0, 0, 0, 0.4);
+        padding: 15px;
+        border-radius: 5px;
+        border: 2px solid #4ade80;
+      }
+
+      .merchant-item h4 {
+        margin: 0 0 10px 0;
+        color: #4ade80;
+      }
+       
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <h1>fortunes end ripoff Version 9</h1>
+      <p>code from a friend, credits to him</p>
+      <div class="roll-counter">
+        Total Rolls: <span id="rollCounter">0</span>
+      </div>
+
+      <button id="rollOnceBtn">R x1</button>
+      <button id="rollMultipleBtn">R x1000</button>
+      <button id="toggleMerchant">broken forever</button>
+      <button id="toggleItemInventory">useless inventory</button>
+
+      <div id="results"></div>
+
+      <div class="inventory-section">
+        <h2>Inventory (50 slots)</h2>
+        <div class="inventory-grid" id="inventoryGrid"></div>
+      </div>
+    </div>
+    <div class="merchant-section" id="merchantSection" style="display: none;">
+        <h2>Merchant</h2>
+        <div class="coins-display">Cali-coins: <span id="merchantCoinsDisplay">0</span></div>
+        <div class="merchant-timer">Next restock in: <span id="merchantTimer">30</span>s</div>
+        <div class="merchant-items" id="merchantItems"></div>
+      </div>
+       <div class="item-inventory-section" id="itemInventorySection" style="display: none;">
+        <h2>Item Inventory (<span id="itemInventoryCount">0</span>/50 slots)</h2>
+        <div class="inventory-grid" id="itemInventoryGrid"></div>
+      </div>
+
+
+    <script>
+      const resultsDiv = document.getElementById('results');
+      const rollOnceBtn = document.getElementById('rollOnceBtn');
+      const rollMultipleBtn = document.getElementById('rollMultipleBtn');
+      const inventoryGrid = document.getElementById('inventoryGrid');
+      const toggleMerchantBtn = document.getElementById('toggleMerchant');
+      const toggleItemInventoryBtn = document.getElementById('toggleItemInventory');
+      const merchantSection = document.getElementById('merchantSection');
+      const itemInventorySection = document.getElementById('itemInventorySection');
+      const merchantItems = document.getElementById('merchantItems');
+      const itemInventoryGrid = document.getElementById('itemInventoryGrid');
+      const itemInventoryCountDisplay = document.getElementById('itemInventoryCount');
+      const merchantCoinsDisplay = document.getElementById('merchantCoinsDisplay');
+      const rollCounterDisplay = document.getElementById('rollCounter');
+      
+
+
+      let isCooldown = false;
+      let multiRolls = [];
+      let inventory = [];
+      const MAX_SLOTS = 50;
+      let lastClickTime = {};
+      let itemInventory = [];
+      let totalRolls = 0;
+      let merchantTimeLeft = 10;
+      let merchantStock = [];
+      let caliCoins = 1e300;
+
+
+      // Load inventory from localStorage
+      function loadInventory() {
+        const saved = localStorage.getItem('calisRngInventory');
+        if (saved) {
+          try {
+            inventory = JSON.parse(saved);
+          } catch (e) {
+            inventory = [];
+          }
+        } else {
+          inventory = [];
+        }
+        renderInventory();
+      }
+
+      // Save inventory to localStorage
+      function saveInventory() {
+        localStorage.setItem('calisRngInventory', JSON.stringify(inventory));
+        const shopData = {
+          coins: caliCoins,
+          totalRolls: totalRolls,
+          itemInventory: itemInventory
+        };
+        localStorage.setItem('calisRngShop', JSON.stringify(shopData));
+        updateRollCounter();
+        renderInventory();
+        renderItemInventory();
+      }
+      
+      // Render inventory grid
+      function renderInventory() {
+        inventoryGrid.innerHTML = '';
+        for (let i = 0; i < MAX_SLOTS; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'inventory-slot';
+          
+          if (inventory[i]) {
+            const item = inventory[i];
+            slot.className = 'inventory-slot';
+            
+            if (item.variants) {
+              const varDiv = document.createElement('div');
+              varDiv.className = 'slot-variants';
+              varDiv.textContent = item.variants;
+              slot.appendChild(varDiv);
+            }
+            
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'slot-value';
+            valueDiv.style.color = item.color;
+            valueDiv.textContent = item.displayValue;
+            slot.appendChild(valueDiv);
+            
+            const rankDiv = document.createElement('div');
+            rankDiv.className = 'slot-rank';
+            rankDiv.textContent = item.rank;
+            slot.appendChild(rankDiv);
+            
+            slot.onclick = () => deleteItem(i);
+          } else {
+            slot.className = 'inventory-slot empty';
+            slot.textContent = 'Empty';
+          }
+          
+          inventoryGrid.appendChild(slot);
+        }
+      }
+ function generateMerchantStock() {
+        merchantStock = [];
+        
+        // Generate 10 items guaranteed
+        for (let i = 0; i < 10; i++) {
+          const rand = Math.random();
+          
+          if (rand < 1/100) {
+            // Cheese
+            merchantStock.push({
+              name: 'Cheese',
+              cost: 69,
+              description: '1/5.55 chance to force a special roll',
+              type: 'cheese'
+            });
+          } else if (rand < 1/10 + 1/100) {
+            // Special Booster
+            const multiplier = Math.pow(Math.random(), -2.5);
+            const cost = Math.floor(Math.pow(multiplier, 1.25));
+            merchantStock.push({
+              name: 'Special Booster',
+              cost: cost,
+              description: `Multiplies special luck by ${multiplier.toFixed(2)}x`,
+              multiplier: multiplier,
+              type: 'specialBooster'
+            });
+          } else {
+            // Regular Booster
+            const multiplier = Math.pow(Math.random(), -2.5);
+            const cost = Math.floor(Math.pow(multiplier, 1.25));
+            merchantStock.push({
+              name: 'Booster',
+              cost: cost,
+              description: `Multiplies luck by ${multiplier.toFixed(2)}x`,
+              multiplier: multiplier,
+              type: 'booster'
+            });
+          }
+        }
+      }
+
+
+      function renderMerchant() {
+        merchantCoinsDisplay.textContent = caliCoins.toFixed(2);
+        merchantItems.innerHTML = '';
+        
+        if (merchantStock.length === 0) {
+          merchantItems.innerHTML = '<p style="grid-column: 1 / -1;">No items in stock</p>';
+          return;
+        }
+        
+        merchantStock.forEach((item, index) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'merchant-item';
+          itemDiv.innerHTML = `
+            <h4>${item.name}</h4>
+            <p>${item.description}</p>
+            <p>Cost: ${item.cost} coins</p>
+            <button onclick="buyMerchantItem(${index})" ${caliCoins < item.cost || itemInventory.length >= 50 ? 'disabled' : ''}>Buy</button>
+          `;
+          merchantItems.appendChild(itemDiv);
+        });
+      }
+
+      window.buyMerchantItem = function(index) {
+        const item = merchantStock[index];
+        if (!item || caliCoins < item.cost || itemInventory.length >= 50) return;
+        
+        caliCoins -= item.cost;
+        itemInventory.push(item);
+        merchantStock.splice(index, 1);
+        
+        
+        renderMerchant();
+        renderItemInventory();
+      };
+
+      function renderItemInventory() {
+        itemInventoryGrid.innerHTML = '';
+        itemInventoryCountDisplay.textContent = itemInventory.length;
+        
+        for (let i = 0; i < 50; i++) {
+          const slot = document.createElement('div');
+          
+          if (itemInventory[i]) {
+            const item = itemInventory[i];
+            slot.className = 'item-slot';
+            
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'item-name';
+            nameDiv.textContent = item.name;
+            slot.appendChild(nameDiv);
+            
+            if (item.multiplier) {
+              const multDiv = document.createElement('div');
+              multDiv.className = 'item-multiplier';
+              multDiv.textContent = `${item.multiplier.toFixed(2)}x`;
+              slot.appendChild(multDiv);
+            }
+            
+            slot.onclick = () => useItem(i);
+          } else {
+            slot.className = 'item-slot empty';
+            slot.textContent = 'Empty';
+          }
+          
+          itemInventoryGrid.appendChild(slot);
+        }
+      }
+
+      function useItem(index) {
+        const item = itemInventory[index];
+        if (!item) return;
+        
+        if (item.type === 'cheese') {
+          if (Math.random() < 1/5.55) {
+            totalRolls++;
+            const roll = rollOnce(1, 1, 1, true);
+            multiRolls = [roll.inventoryData];
+            
+            let displayResult = roll.result.replace(/ROLLINDEX/g, '0').replace(/RANKBUTTON/g, 
+              `<button class="rank-button" id="rank-btn-0" onclick="acceptRoll(0)">${roll.inventoryData.rank}</button>`);
+            
+            resultsDiv.innerHTML = displayResult;
+            if (roll.cooldown > 0) setCooldown(roll.cooldown);
+          } else {
+            resultsDiv.innerHTML = '<span style="color: yellow;">The cheese did nothing...</span>';
+          }
+        } else if (item.type === 'booster') {
+          totalRolls++;
+          const roll = rollOnce(1, 1, 1);
+          multiRolls = [roll.inventoryData];
+          
+          let displayResult = roll.result.replace(/ROLLINDEX/g, '0').replace(/RANKBUTTON/g, 
+            `<button class="rank-button" id="rank-btn-0" onclick="acceptRoll(0)">${roll.inventoryData.rank}</button>`);
+          
+          resultsDiv.innerHTML = '<span style="color: gold;">BOOSTER ACTIVATED! (Luck x' + item.multiplier.toFixed(2) + ')</span><br>' + displayResult;
+          if (roll.cooldown > 0) setCooldown(roll.cooldown);
+        } else if (item.type === 'specialBooster') {
+          totalRolls++;
+          const roll = rollOnce(1, 1, 1);
+          // Apply special luck boost directly to special ranks
+          specialLuckBonus *= item.multiplier;
+          multiRolls = [roll.inventoryData];
+          
+          let displayResult = roll.result.replace(/ROLLINDEX/g, '0').replace(/RANKBUTTON/g, 
+            `<button class="rank-button" id="rank-btn-0" onclick="acceptRoll(0)">${roll.inventoryData.rank}</button>`);
+          
+          resultsDiv.innerHTML = '<span style="color: #ff1493;">SPECIAL BOOSTER ACTIVATED! (Special Luck x' + item.multiplier.toFixed(2) + ')</span><br>' + displayResult;
+          
+          // Reset special luck after roll
+          specialLuckBonus = 1 + ((shopUpgrades.specialLuck || 0) * 0.1);
+          
+          if (roll.cooldown > 0) setCooldown(roll.cooldown);
+        }
+        
+        itemInventory.splice(index, 1);
+        renderItemInventory();
+      }
+
+      setInterval(() => {
+        merchantTimeLeft--;
+        merchantTimer.textContent = merchantTimeLeft;
+        
+        if (merchantTimeLeft <= 0) {
+          merchantTimeLeft = 10;
+          generateMerchantStock();
+          renderMerchant();
+        }
+      }, 1000);
+    
+      // Delete item on double click
+      function deleteItem(index) {
+        const now = Date.now();
+        const key = `slot_${index}`;
+        
+        if (lastClickTime[key] && now - lastClickTime[key] < 1000) {
+          // Double click detected
+          inventory.splice(index, 1);
+          saveInventory();
+          lastClickTime[key] = 0;
+        } else {
+          lastClickTime[key] = now;
+        }
+      }
+
+      // Add to inventory
+      function addToInventory(item, buttonId) {
+        if (!item) return;
+        if (inventory.length >= MAX_SLOTS) {
+          alert('Inventory full! Delete items to make space.');
+          return;
+        }
+        
+        inventory.push(item);
+        saveInventory();
+        
+        // Mark button as accepted
+        const btn = document.getElementById(buttonId);
+        if (btn) {
+          btn.classList.add('accepted');
+          btn.onclick = null;
+        }
+      }
+
+      // Accept from roll
+      function acceptRoll(index) {
+        addToInventory(multiRolls[index], `rank-btn-${index}`);
+      }
+
+      // Make acceptRoll available globally
+      window.acceptRoll = acceptRoll;
+
+      function setCooldown(duration) {
+        if (isCooldown) return;
+        isCooldown = true;
+        rollOnceBtn.disabled = true;
+        rollMultipleBtn.disabled = true;
+        let remaining = duration / 1000;
+        const originalText1 = rollOnceBtn.textContent;
+        const originalText2 = rollMultipleBtn.textContent;
+
+        const interval = setInterval(() => {
+          rollOnceBtn.textContent = `Cooldown: ${remaining.toFixed(1)}s`;
+          rollMultipleBtn.textContent = `Cooldown: ${remaining.toFixed(1)}s`;
+          remaining -= 0.1;
+          if (remaining <= 0) {
+            clearInterval(interval);
+            rollOnceBtn.disabled = false;
+            rollMultipleBtn.disabled = false;
+            rollOnceBtn.textContent = originalText1;
+            rollMultipleBtn.textContent = originalText2;
+            isCooldown = false;
+          }
+        }, 100);
+      }
+       function updateRollCounter() {
+        rollCounterDisplay.textContent = totalRolls;
+        }
+
+      function getColor(value) {
+        if (value < 100) return 'white';
+        if (value < 1000) return '#ffffaa';
+        if (value < 10000) return 'yellow';
+        if (value < 100000) return 'cyan';
+        if (value < 1000000) return 'blue';
+        if (value < 100000000) return 'orange';
+        if (value < 1000000000) return '#ff4400';
+        if (value < 100000000000) return '#00ff00';
+        if (value < 1000000000000) return '#00ffaa';
+        if (value < 100000000000000) return '#ff00ff';
+        if (value < 1e15) return "#aa0000";
+        if (value < 1e17) return "#ff00aa";
+        if (value < 1e18) return "#ffbbbb";
+        if (value < 1e20) return "#ffffaa";
+        if (value < 1e21) return "#ffaadc";
+        if (value < 1e23) return "#aa00aa";
+        if (value < 1e24) return "#ccaa12";
+        if (value < 1e26) return "#ad42e9";
+        if (value < 1e27) return "#7900e5";
+        if (value < 1e29) return "#df9c05";
+        if (value < 1e30) return "#991500";
+        if (value < 1e33) return "#a1a1a1";
+        return '#000000';
+      }
+
+      function rollOnce() {
+        let isSpecial = false;
+        let auraCooldown = false;
+        let isNegative = false;
+        let isReverted = false;
+        let output = '';
+
+        
+        let luck = 1
+        let base = ((1 / Math.random()) ** 1.62) * luck;
+        
+
+       
+        // Store the base value for rank determination (BEFORE variants)
+        const baseValue = base;
+        const absBaseValue = Math.abs(baseValue);
+
+        // VARIANT system - calculate but don't apply yet
+        const variants = [
+          { name: 'Modified', chance: 1 / 50, multiplier: 50 },
+          { name: 'Altered', chance: 1 / 69, multiplier: 69 },
+          { name: 'Adjusted', chance: 1 / 75, multiplier: 75 },
+          { name: 'Effortless', chance: 1 / 89, multiplier: 89 },
+          { name: 'Shiny', chance: 1 / 100, multiplier: 100 },
+          { name: 'variat', chance: 1 / 111, multiplier: 111 },
+          { name: 'yet another variat', chance: 1 / 111, multiplier: 111 },
+          { name: 'pixelated', chance: 1 / 122, multiplier: 122 },
+          { name: 'sparkling', chance: 1 / 125, multiplier: 125 },
+          { name: 'copper', chance: 1 / 165, multiplier: 165 },
+          { name: 'lucky', chance: 1 / 250, multiplier: 250 },
+          { name: 'silver', chance: 1 / 333, multiplier: 333 },
+          { name: 'reinforced', chance: 1 / 400, multiplier: 400 },
+          { name: 'midas', chance: 1 / 500, multiplier: 500 },
+          { name: 'naturalistic', chance: 1 / 577, multiplier: 577 },
+          { name: 'translucent', chance: 1 / 625, multiplier: 625 },
+          { name: 'gilded', chance: 1 / 777, multiplier: 777 },
+          { name: 'empowered', chance: 1 / 850, multiplier: 850 },
+          { name: 'chromatic', chance: 1 / 1000, multiplier: 1000 },
+          { name: 'small', chance: 1 / 1111, multiplier: 1111 },
+          { name: '~~windy~~', chance: 1 / 1234, multiplier: 1234 },
+          { name: 'cherished', chance: 1 / 1500, multiplier: 1500 },
+          { name: 'vintage', chance: 1 / 1988, multiplier: 1988 },
+          { name: 'delightful', chance: 1 / 2000, multiplier: 2000 },
+          { name: 'abolished', chance: 1 / 2250, multiplier: 2250 },
+          { name: 'spectral', chance: 1 / 2500, multiplier: 2500 },
+          { name: 'augmented', chance: 1 / 3000, multiplier: 3000 },
+          { name: 'abyssal', chance: 1 / 3333, multiplier: 3333 },
+          { name: 'grayscale', chance: 1 / 3456, multiplier: 3456 },
+          { name: 'retro', chance: 1 / 4000, multiplier: 4000 },
+          { name: 'HUge', chance: 1 / 4111, multiplier: 4111 },
+          { name: 'wonderful!!!', chance: 1 / 4242, multiplier: 4242 },
+          { name: 'inverted', chance: 1 / 4444, multiplier: 4444 },
+          { name: 'dark', chance: 1 / 5000, multiplier: 5000 },
+          { name: 'light', chance: 1 / 5250, multiplier: 5250 },
+          { name: 'ancient', chance: 1 / 5555, multiplier: 5555 },
+          { name: 'gleaming', chance: 1 / 6000, multiplier: 6000 },
+          { name: '🎃spooky🎃', chance: 1 / 6666, multiplier: 6666 },
+          { name: 'relic', chance: 1 / 7000, multiplier: 7000 },
+          { name: 'grandiose', chance: 1 / 7500, multiplier: 7500 },
+          { name: 'EFFORTLESS - EASY (MUTATED!)', chance: 1 / 7921, multiplier: 7921 },
+          { name: 'Blessed', chance: 1 / 8250, multiplier: 8250 },
+          { name: 'invisible', chance: 1 / 8888, multiplier: 8888 },
+          { name: 'abnormal', chance: 1 / 9336, multiplier: 9336 },
+          { name: 'bygone', chance: 1 / 10000, multiplier: 10000 },
+          { name: '> tiny <', chance: 1 / 11111, multiplier: 11111 },
+          { name: '❄️cold❄️', chance: 1 / 12345.67, multiplier: 12345.67 },
+          { name: 'lunar', chance: 1 / 15000, multiplier: 15000 },
+          { name: 'uranium', chance: 1 / 17500, multiplier: 17500 },
+          { name: 'myriad', chance: 1 / 20000, multiplier: 20000 },
+          { name: 'overgrown', chance: 1 / 21500, multiplier: 21500 },
+          { name: 'unorthodox', chance: 1 / 23456, multiplier: 23456 },
+          { name: 'virtual', chance: 1 / 25000, multiplier: 25000 },
+          { name: 'crystally', chance: 1 / 27500, multiplier: 27500 },
+          { name: 'immense', chance: 1 / 30000, multiplier: 30000 },
+          { name: 'pi', chance: 1 / 31415, multiplier: 31415 },
+          { name: 'overseer', chance: 1 / 33333, multiplier: 33333 },
+          { name: 'fortuitous', chance: 1 / 42500, multiplier: 42500 },
+          { name: 'tidal', chance: 1 / 50000, multiplier: 50000 },
+          { name: 'midas - true gold (MUTATED!)', chance: 1 / 52500, multiplier: 52500 },
+          { name: 'diamond', chance: 1 / 55555, multiplier: 55555 },
+          { name: 'radiant', chance: 1 / 60000, multiplier: 60000 },
+          { name: 'mythic', chance: 1 / 68888, multiplier: 68888 },
+          { name: 'extranicelmao', chance: 1 / 69420, multiplier: 69420 },
+          { name: 'glacial', chance: 1 / 75000, multiplier: 75000 },
+          { name: '🍬candy🍭', chance: 1 / 85000, multiplier: 85000 },
+          { name: 'expansive', chance: 1 / 88888, multiplier: 88888 },
+          { name: 'prodigious', chance: 1 / 94000, multiplier: 94000 },
+          { name: '< super >', chance: 1 / 100000, multiplier: 100000 },
+          { name: 'another variat', chance: 1 / 111111, multiplier: 111111 },
+          { name: 'java', chance: 1 / 123123, multiplier: 123123 },
+          { name: '🍍pineapple🍍', chance: 1 / 133333, multiplier: 133333 },
+          { name: 'abysmal', chance: 1 / 177777, multiplier: 177777 },
+          { name: 'Daws 20', chance: 1 / 2e5, multiplier: 2e5 },
+          { name: 'luminescent', chance: 1 / 2.5e5, multiplier: 250000 },
+          { name: 'cursed', chance: 1 / 333333, multiplier: 333333 },
+          { name: 'emerald', chance: 1 / 430000, multiplier: 430000 },
+          { name: 'insane', chance: 1 / 500000, multiplier: 500000 },
+          { name: '>> Microscopic <<', chance: 1 / 555555, multiplier: 555555 },
+          { name: 'Hyper', chance: 1 / 625000, multiplier: 625000 },
+          { name: 'Evil', chance: 1 / 666666, multiplier: 666666 },
+          { name: 'WINDY - WHIRLWIND', chance: 1 / 712700, multiplier: 712700 },
+          { name: 'Stupendous', chance: 1 / 750000, multiplier: 750000 },
+          { name: 'Monochromatic', chance: 1 / 8.5e5, multiplier: 850000 },
+          { name: 'Alpha', chance: 1 / 900000, multiplier: 950000 },
+          { name: 'Beta', chance: 1 / 950000, multiplier: 950000 },
+          { name: 'Sigma', chance: 1 / 977000, multiplier: 977000 },
+          { name: '<< Omega >>', chance: 1 / 1e6, multiplier: 1e6 },
+          { name: 'Unusual', chance: 1 / 1234567, multiplier: 1234567 },
+          { name: 'vinatge LMAO BRO MISSPELLED IT', chance: 1 / 1777777, multiplier: 1777777 },
+          { name: 'Ethereal', chance: 1 / 2e6, multiplier: 2e6 },
+          { name: 'Duality', chance: 1 / 2222222, multiplier: 2222222 },
+          { name: 'Ultraviolet', chance: 1 / 3e6, multiplier: 3e6 },
+          { name: 'cute :3', chance: 1 / 3333333, multiplier: 3333333 },
+          { name: 'sapphire', chance: 1 / 4e6, multiplier: 4e6 },
+          { name: 'extrinsic', chance: 1 / 5e6, multiplier: 5e6 },
+          { name: 'eternal', chance: 1 / 7777777, multiplier: 7777777 },
+          { name: 'omega tuna (MUTATION OF OMEGA)', chance: 1 / 8388608, multiplier: 8388608 },
+          { name: 'how', chance: 1 / 1e7, multiplier: 1e7 },
+          { name: 'quantum', chance: 1 / 11111111, multiplier: 11111111 },
+          { name: 'ascended', chance: 1 / 1.5e7, multiplier: 1.5e7 },
+          { name: 'boundless', chance: 1 / 2.5e7, multiplier: 2.5e7 },
+          { name: 'gargantuan', chance: 1 / 3e7, multiplier: 3e7 },
+          { name: 'beyond', chance: 1 / 4e7, multiplier: 4e7 },
+          { name: '**shimmering**', chance: 1 / 45000000, multiplier: 45000000 },
+          { name: '<<<< Infinite >>>>', chance: 1 / 5e7, multiplier: 5e7 },
+          { name: 'ruby', chance: 1 / 6.25e7, multiplier: 6.25e7 },
+          { name: 'incessant', chance: 1 / 77777777, multiplier: 77777777 },
+          { name: 'cosmic', chance: 1 / 100000000, multiplier: 1e8 },
+          { name: 'yet another variat', chance: 1 / 111111111, multiplier: 111111111 },
+          { name: 'omicron', chance: 1 / 200000000, multiplier: 200000000 },
+          { name: 'nuclear', chance: 1 / 250000000, multiplier: 250000000 },
+          { name: 'DUALITY - TRIPLE TROUBLE', chance: 1 / 333333333, multiplier: 333333333 },
+          { name: 'calis blessing', chance: 1 / 414141414, multiplier: 414141414 },
+          { name: 'atomic', chance: 1 / 555555555, multiplier: 555555555 },
+          { name: 'divine.', chance: 1 / 7.5e8, multiplier: 7.5e8 },
+          { name: '<^>Colossal<^>', chance: 1 / 777777777, multiplier: 777777777 },
+          { name: 'gen alpha brainrot SIXXX SEVENNN (MUTATION OF ALPHA))', chance: 1 / 90000067, multiplier: 900000067 },
+          { name: 'plot armor', chance: 1 / 1e9, multiplier: 1e9 },
+          { name: '===!!ASTRONOMIC!!===', chance: 1 / 5e9, multiplier: 5e9 },
+          { name: 'galactic', chance: 1 / 1e10, multiplier: 1e10 },
+          { name: 'iridescent', chance: 1 / 5e10, multiplier: 5e10 },
+          { name: 'skibidi another variant', chance: 1 / 111111111111, multiplier: 111111111111 },
+          { name: 'corrupted', chance: 1 / 5e11, multiplier: 5e11 },
+          { name: 'impossible', chance: 1 / 1e12, multiplier: 1e12 },
+          { name: 'finale', chance: 1 / 1e15, multiplier: 1e15 },
+          
+        ];
+
+        let variantText = '';
+        let variantMultiplier = 1;
+
+        variants.forEach(v => {
+          if (Math.random() < v.chance) {
+            variantMultiplier *= v.multiplier;
+            variantText += `[${v.name.toUpperCase()}] `;
+          }
+        });
+
+        // Determine rank based ONLY on baseValue (before variants)
+        let rank = '';
+        let displayValue = baseValue; // Will be modified for special ranks only
+        // Special ranks that override the value
+        // Special ranks that override the value
+         if (absBaseValue < 2) {
+          if (Math.random() < 1 / 3295.2071305497752000) { 
+            rank = 'RAREST AURA EVER????????? thsoe who skull one'; 
+            displayValue *= 5e5; 
+            isSpecial = true; 
+          }
+          else { rank = 'Abarabar, Kyle Raphael N. '; }
+        }
+        else if (absBaseValue < 3) rank = 'Ablir, Maiolaine Lianna G. ';
+        else if (absBaseValue < 5) rank = 'Acuña, Myron Corlee L. ';
+        else if (absBaseValue < 7) rank = 'Adap, Frances Ivogne V. ';
+        else if (absBaseValue < 8) rank = 'Adrales, John Marc R. ';
+        else if (absBaseValue < 10) rank = 'Adviento, Sir Lance Ghabriel R. ';
+        else if (absBaseValue < 12) rank = 'Advincula, Sagira Adrianna A. ';
+        else if (absBaseValue < 15) rank = 'Agapito, Maria Janessa';
+        else if (absBaseValue < 18) rank = 'Aguila, Johan Clyde C. ';
+        else if (absBaseValue < 19) rank = 'Aguilar, Elizabeth Kae T.';
+        else if (absBaseValue < 20) rank = 'Aguilar, Ysabelle Kae T.';
+        else if (absBaseValue < 22) rank = 'Akiyama, Jayrob Jiro P. ';
+        else if (absBaseValue < 24) rank = 'Alam, Kelcey Mieko A. ';
+        else if (absBaseValue < 27) rank = 'Alcantara, Juan Luis E. ';
+        else if (absBaseValue < 30) rank = 'Alicos, Khloe Erlanda';
+        else if (absBaseValue < 32) rank = 'Almoquira, Paulo Emile A. ';
+        else if (absBaseValue < 35) rank = 'Alquero, Liam Adreil C. ';
+        else if (absBaseValue < 37) rank = 'Alvarez, Arjade April Bondad Jr.'
+        else if (absBaseValue < 40) rank = 'Ambai, Seisuke I. ';
+        else if (absBaseValue < 45) rank = 'Amongan, Ericka S. ';
+        else if (absBaseValue < 50) rank = 'Amparo, Clark Revean M.';
+        else if (absBaseValue < 55) rank = 'Ancheta, Samara Austine M. ';
+        else if (absBaseValue < 60) rank = 'Angeles, Atasha Isabel S. ';
+        else if (absBaseValue < 69) rank = 'Angkico, Avriel Herzlich O. ';
+        else if (absBaseValue < 75) rank = 'Anire, Thalia Denise F. ';
+        else if (absBaseValue < 85) rank = 'Añola, Paulo Benedict B. ';
+        else if (absBaseValue < 100) rank = 'Apua, Anikka Madeleine';
+        else if (absBaseValue < 112) rank = 'Aquilino, Caelei Keida B. ';
+        else if (absBaseValue < 125) rank = 'Aquino, Alquien James B. ';
+        else if (absBaseValue < 140) rank = 'Aquino, Angela Raissa P. ';
+        else if (absBaseValue < 160) rank = 'Aquino, Christa Jayla A. ';
+        else if (absBaseValue < 180) rank = 'Aquino, Maeve Josaene A. ';
+        else if (absBaseValue < 200) rank = 'Arellano, Clyde Dainiel P. ';
+        else if (absBaseValue < 225) rank = 'Arevalo, Djhon Daniel M. ';
+        else if (absBaseValue < 250) rank = 'Arguelles, Nekechi Briendel H. ';
+        else if (absBaseValue < 288) rank = 'Arguson, Kenna Ysabelle A. ';
+        else if (absBaseValue < 324) rank = 'Atega, Angelo Ahmed Quinsher O. ';
+        else if (absBaseValue < 365) rank = 'Aurelio, Enz Sebastian U. ';
+        else if (absBaseValue < 400) rank = 'Azares, Rei Calix M. ';
+        else if (absBaseValue < 454) rank = 'Baja, Malic A.';
+        else if (absBaseValue < 5e2) rank = 'Balceda, Jaala Anathan L. ';
+        else if (absBaseValue < 555) rank = 'Baliton, Rhyle Gabrielle A. ';
+        else if (absBaseValue < 6e2) rank = 'Balmeo, Aeron C. ';
+        else if (absBaseValue < 653) rank = 'Barias, Sofia Victoria G. ';
+        else if (absBaseValue < 7e2) rank = 'Barrios, Christian C. ';
+        else if (absBaseValue < 767) rank = 'Bautista, Charlize Ysabel P. ';
+        else if (absBaseValue < 830) rank = 'Bautista, Irish B. ';
+        else if (absBaseValue < 850) rank = 'Bautista, Kassandra Ysabelle R.';
+        else if (absBaseValue < 877) rank = 'Bautista, Katelynn Elizabeth DC. ';
+        else if (absBaseValue < 900) rank = 'Bautista, Lance Kendrick R. ';
+        else if (absBaseValue < 950) rank = 'Bayle, Athena Gaile A. ';
+        else if (absBaseValue < 977) rank = 'Berin, Zarena Monic B. ';
+        else if (absBaseValue < 1e3) rank = 'Bernardo, Brently B. ';
+        else if (absBaseValue < 1088) rank = 'Binaday, Leigh Ashley H. ';
+        else if (absBaseValue < 1200) rank = 'Biñag, Jacobo Vidor L. ';
+        else if (absBaseValue < 1300) rank = 'Borjal, Briseis Winter L. ';
+        else if (absBaseValue < 1500) rank = 'Briones, Alexa Isabelle V. ';
+        else if (absBaseValue < 1700) rank = 'Buenviaje, Keith Stefan';
+        else if (absBaseValue < 1850) rank = 'Cabal, Ralp Enzo M. ';
+        else if (absBaseValue < 2e3) rank = 'Caberte, Rain Elijah A. ';
+        else if (absBaseValue < 2333) rank = 'Cabrera, Marvi Seiron C. ';
+        else if (absBaseValue < 2763) rank = 'Cajapin, Zephanaiah T. ';
+        else if (absBaseValue < 3e3) rank = 'Caliva, Ziv Gabriel M. ';
+        else if (absBaseValue < 3500) rank = 'Callejo, Aleckxis Carl S. ';
+        else if (absBaseValue < 4000) rank = 'Camandang, Aedan Danara P. ';
+        else if (absBaseValue < 4500) rank = 'Camilon, Euan Devonair B. ';
+        else if (absBaseValue < 5000) rank = 'Camoras, Carl David';
+        else if (absBaseValue < 5400) rank = 'Canales, Efrina Azon B. ';
+        else if (absBaseValue < 5725) rank = 'Cañete, Michaiel Danielle M.  ';
+        else if (absBaseValue < 6000) rank = 'Cariño, Jerica Zoie S. ';
+        else if (absBaseValue < 6200) rank = 'Castillo, Jhonmhea Jazer S. ';
+        else if (absBaseValue < 6666) rank = 'Castillo, Julio Samuel L. ';
+        else if (absBaseValue < 7000) rank = 'Catle, Christian Wilson B. ';
+        else if (absBaseValue < 8000) rank = 'Cayanan, Albert A. ';
+        else if (absBaseValue < 8500) rank = 'Choi, Shing Yu D. ';
+        else if (absBaseValue < 9500) rank = 'Chua, Myel Ysabella S. ';
+        else if (absBaseValue < 9750) rank = 'Cleofas, Johanna Darleene B. ';
+        else if (absBaseValue < 1e4) rank = 'Cleofas, Johnna Aquileene B. ';
+        else if (absBaseValue < 1.2e4) rank = 'Co, Xean Ezekiel S. ';
+        else if (absBaseValue < 1.35e4) rank = 'Collado, Juliana Luisa C. ';
+        else if (absBaseValue < 1.5e4) rank = 'Colorado, Angelica Beatriz T. ';
+        else if (absBaseValue < 1.8e4) rank = 'Cosa, Dawn Gabrielle Z. ';
+        else if (absBaseValue < 2e4) rank = 'Crisologo, Red (Pula) Kyleshei O. ';
+        else if (absBaseValue < 23233) rank = 'Cruz, Ashi Jasmine L. ';
+        else if (absBaseValue < 2.5e4) rank = 'Cruz, Nathan R. ';
+        else if (absBaseValue < 2.6e4) rank = 'Cruz, Shekinah Mikayla M. ';
+        else if (absBaseValue < 2.8e4) rank = 'Cruz, Sophia Mikayla M. ';
+        else if (absBaseValue < 31415) rank = 'Cruzat, Jarren Marykaitlyn P. ';
+        else if (absBaseValue < 33333) rank = 'Cuaresma, Zoe Grace L. ';
+        else if (absBaseValue < 3.5e4) rank = 'Cuenca, Kara Faith B. ';
+        else if (absBaseValue < 4e4) rank = 'Culla, Meri Naomi Kali S. ';
+        else if (absBaseValue < 45000) rank = 'Dagatan, Czyh Jhan S. ';
+        else if (absBaseValue < 48000) rank = 'Dagohoy, Gabriel S. ';
+        else if (absBaseValue < 5e4) rank = 'Dagohoy, Nathan Jaed S. ';
+        else if (absBaseValue < 57500) rank = 'Dagohoy, Nichole S. ';
+        else if (absBaseValue < 65256) rank = 'Dalumpienes, Jan Lawrence V. ';
+        else if (absBaseValue < 69420) rank = 'David, Matthew Angelo S. ';
+        else if (absBaseValue < 75000) rank = 'Daysor, Leann Raine Alexis L. ';
+        else if (absBaseValue < 8e4) rank = 'De Castro, Jenica Claire';
+        else if (absBaseValue < 8.5e4) rank = 'De Castro, Paul Drueco';
+        else if (absBaseValue < 9e4) rank = 'De Castro, Peter Drueco';
+        else if (absBaseValue < 9.5e4) rank = 'De Castro, Xian Elijah P. ';
+        else if (absBaseValue < 9.8e4) rank = 'De Castro, Ziv Nathan P. ';
+        else if (absBaseValue < 1e5) rank = 'De Guzman, Maria G. ';
+        else if (absBaseValue < 1.125e5) rank = 'De Leon, Czander S. ';
+        else if (absBaseValue < 1.3e5) rank = 'De Leon, Czoe S. ';
+        else if (absBaseValue < 1.5e5) rank = 'De Leon, Eliah Francine D. ';
+        else if (absBaseValue < 1.7e5) rank = 'Del Mundo, Janzen Aliezer B.  ';
+        else if (absBaseValue < 2e5) rank = 'Del Rosario, Leisha Amaris R. ';
+        else if (absBaseValue < 2.2e5) rank = 'Del Rosario, Ralph Alfonso C. ';
+        else if (absBaseValue < 2.45e5) rank = 'Del Rosario, Sophia Nicole L. ';
+        else if (absBaseValue < 2.6e5) rank = 'Dela Cruz, Alouja Xhiel DA. ';
+        else if (absBaseValue < 2.8e5) rank = 'Dela Cruz, Dannah Francisco';
+        else if (absBaseValue < 3.15e5) rank = 'Dela Cruz, Mackenrie O. ';
+        else if (absBaseValue < 3.45e5) rank = 'Dela Cruz, Railey A. ';
+        else if (absBaseValue < 3.8e5) rank = 'Dela Cruz, Raphael A. ';
+        else if (absBaseValue < 4.2e5) rank = 'Delos Santos, Lance Raphael C. ';
+        else if (absBaseValue < 456789) rank = 'Delos Santos, Neil Ian F. ';
+        else if (absBaseValue < 5e5) rank = 'Descartin, Ashley Kate A. ';
+        else if (absBaseValue < 555555) rank = 'Dichoso, Ryan Jacob M. ';
+        else if (absBaseValue < 6e5) rank = 'Dizon, Jhat Daniel T. ';
+        else if (absBaseValue < 688990) rank = 'Dominguez, Al Vander Y. ';
+        else if (absBaseValue < 7.5e5) rank = 'Edem, Zaab Kiane E. ';
+        else if (absBaseValue < 8.25e5) rank = 'Eje, Renko Isiah C. ';
+        else if (absBaseValue < 9e5) rank = 'Ejercito, Andrei G. ';
+        else if (absBaseValue < 9.5e5) rank = 'Engada, Ghicelle D. ';
+        else if (absBaseValue < 1e6) rank = 'Epres, Blessie Mae A. ';
+        else if (absBaseValue < 1.17e6) rank = 'Erne, Daniella Cataleya G.';
+        else if (absBaseValue < 1.38e6) rank = 'Erne, Iyaz Remielle G. ';
+        else if (absBaseValue < 1.5e6) rank = 'Escalona, Keion Matthew L.';
+        else if (absBaseValue < 1.8e6) rank = 'Esquivel, Ckean Edward A. ';
+        else if (absBaseValue < 2e6) rank = 'Evangelista, Calix L. ';
+        else if (absBaseValue < 2.3e6) rank = 'Flejoles, Thea Myrtle E. ';
+        else if (absBaseValue < 2.7e6) rank = 'Flejoles, Thyra Katrine E. ';
+        else if (absBaseValue < 3e6) rank = 'Fontanilla, Casey Dane S. ';
+        else if (absBaseValue < 3.6e6) rank = 'Fontanilla, Charlene Aish S.';
+        else if (absBaseValue < 4.11e6) rank = 'Francisco, Apollo Yshikiel I. ';
+        else if (absBaseValue < 4.5e6) rank = 'Francisco, Athena Silverose I. ';
+        else if (absBaseValue < 5e6) rank = 'Frani, Bryce Gillian DR. ';
+        else if (absBaseValue < 5.6e6) rank = 'Fuentes, Isabelle Lovette S. ';
+        else if (absBaseValue < 6.4e6) rank = 'Garcia, Dionne Marguerite';
+        else if (absBaseValue < 7e6) rank = 'Gandia, Zoe Charlize S. ';
+        else if (absBaseValue < 7.3e6) rank = 'Garcia, Jose Martin C. ';
+        else if (absBaseValue < 8e6) rank = 'Garcia, Mikaela Nicole S. ';
+        else if (absBaseValue < 8.1e6) rank = 'Gascon, Arielle Faith B. ';
+        else if (absBaseValue < 9e6) rank = 'Gascon, Arielle Grace B. ';
+        else if (absBaseValue < 1e7) rank = 'Geluz, Romeo IV H. ';
+        else if (absBaseValue < 1.3e7) rank = 'Germedia, Aiesha Sofia S. ';
+        else if (absBaseValue < 1.6e7) rank = 'Gerona, Tim Naomi B. ';
+        else if (absBaseValue < 1.8e7) rank = 'Gimelo, Jewel Shan T. ';
+        else if (absBaseValue < 2e7) rank = 'Gontiñas, Raizalyn R.';
+        else if (absBaseValue < 2.4e7) rank = 'Gonzales, Mikael Aiden D. ';
+        else if (absBaseValue < 2.7e7) rank = 'Grafil, Matthew Andri Clint D.';
+        else if (absBaseValue < 3e7) rank = 'Grecia, Joshua Andrei E.';
+        else if (absBaseValue < 3.3e7) rank = 'Gregorie, John Zyryll S.';
+        else if (absBaseValue < 3.7e7) rank = 'Guarin, Jan Daniel A. ';
+        else if (absBaseValue < 4e7) rank = 'Guevara, Glaycel Anne R. ';
+        else if (absBaseValue < 4.4e7) rank = 'Guinto, Nike Enzo C. ';
+        else if (absBaseValue < 4.7e7) rank = 'Gutierrez, Franz Noraine';
+        else if (absBaseValue < 5e7) rank = 'Habana, Ruvan';
+        else if (absBaseValue < 5.4e7) rank = 'Idolog, Richess Mine T. ';
+        else if (absBaseValue < 6e7) rank = 'Ilano, Francis Marc G.  ';
+        else if (absBaseValue < 7e7) rank = 'Ilano, Miguel Dave A. ';
+        else if (absBaseValue < 8.1e7) rank = 'IIligan, Arian Y.  ';
+        else if (absBaseValue < 8.9e7) rank = 'Jandoc, Jorgina Cassandra G.';
+        else if (absBaseValue < 9.5e7) rank = 'Jardiniano, Hannah Clave';
+        else if (absBaseValue < 1e8) rank = 'Jaro, Audrey Nicole M. ';
+        else if (absBaseValue < 1.09e8) rank = 'Javier, Althea Danielle M. ';
+        else if (absBaseValue < 1.18e8) rank = 'Javier, Cara Lieanne O. ';
+        else if (absBaseValue < 1.3e8) rank = 'Javier, Rhave Jace P. ';
+        else if (absBaseValue < 1.55e8) rank = 'Javier, Xian Ellies O.  ';
+        else if (absBaseValue < 1.8e8) rank = 'Javier, Zarie Elise L. ';
+        else if (absBaseValue < 2e8) rank = 'Joson, Chris Immanuel N. ';
+        else if (absBaseValue < 2.25e8) rank = 'Juit, Jacob P. ';
+        else if (absBaseValue < 2.5e8) rank = 'Labios, Earl Gabrielle C. ';
+        else if (absBaseValue < 2.8e8) rank = 'Lacson, Marcci Andrei G. ';
+        else if (absBaseValue < 3e8) rank = 'Lacson, Niño Gabriel DC. ';
+        else if (absBaseValue < 3.33e8) rank = 'Lagos, Allier Margaret E. ';
+        else if (absBaseValue < 3.6e8) rank = 'Lagos, Cadence Blanche E. ';
+        else if (absBaseValue < 4e8) rank = 'Lanuzga, Franco Daniel L. ';
+        else if (absBaseValue < 4.30e8) rank = 'Lanzuela, Ashley Jade W. ';
+        else if (absBaseValue < 4.67e8) rank = 'Lanzuela, Trixie Jade W. ';
+        else if (absBaseValue < 4.8e8) rank = 'Lara, Felix Jiji T. ';
+        else if (absBaseValue < 4.94e8) rank = 'Ledesma, Paul Gabriel L. ';
+        else if (absBaseValue < 5e8) rank = 'Ledesma, Paula Elisa L. ';
+        else if (absBaseValue < 5.5e8) rank = 'Lee, Tristen Wade L. ';
+        else if (absBaseValue < 5.8e8) rank = 'Legaspi, Hyuan Shiloh Mari S. ';
+        else if (absBaseValue < 6.15e8) rank = 'Legaspi, Sandra Kirstin E. ';
+        else if (absBaseValue < 6.5e8) rank = 'Legaspi, Ysajasz Gabrielle M. ';
+        else if (absBaseValue < 7e8) rank = 'sem15';
+        else if (absBaseValue < 7.42e8) rank = 'Lorzano, Jaimee Isha G. ';
+        else if (absBaseValue < 8e8) rank = 'Lorzano, Julie Isabelle G. ';
+        else if (absBaseValue < 9e8) rank = 'Lucido, Sebastian Dominic DR. ';
+        else if (absBaseValue < 1e9) rank = 'Lumabit, Selena G.';
+        else if (absBaseValue < 1.15e9) rank = 'Luzon, Janeil Clarisse Joy B. ';
+        else if (absBaseValue < 1.25e9) rank = 'Maaño, Brielle Maxie D. ';
+        else if (absBaseValue < 1.4e9) rank = 'Mabanta, Marco Banggad';
+        else if (absBaseValue < 1.63e9) rank = 'Macatangay, Sean Matthieu C. ';
+        else if (absBaseValue < 1.87e9) rank = 'Machingal, Deen Rayyan S. ';
+        else if (absBaseValue < 2e9) rank = 'Magracia, Clyde Ysabelle DC. ';
+        else if (absBaseValue < 2 ** 31) rank = 'Mañago, Althea Nicole C. ';
+        else if (absBaseValue < 2.4e9) rank = 'Manalastas, Khelleine P. ';
+        else if (absBaseValue < 2.6e9) rank = 'Mangalos, Sean Elijah Y. ';
+        else if (absBaseValue < 2.9e9) rank = 'Mangon, Jaden Evan B. ';
+        else if (absBaseValue < 3.3e9) rank = 'Manuntag, Bernard Jacob M. ';
+        else if (absBaseValue < 3.75e9) rank = 'Manuntag, Kurt Jarred M. ';
+        else if (absBaseValue < 4e9) rank = 'Manzanal, Jeziel Marco P. ';
+        else if (absBaseValue < 4.65e9) rank = 'Manzano, Jessifer Rein L. ';
+        else if (absBaseValue < 4.9e9) rank = 'Marasigan, Ayeisha Nicole A.';
+        else if (absBaseValue < 5e9) rank = 'Marcial, John Kieffer C. ';
+        else if (absBaseValue < 5.2e9) rank = 'Mariano, Xendra Nazarene S. ';
+        else if (absBaseValue < 5.4e9) rank = 'Martinez, Freya Gayle DC. ';
+        else if (absBaseValue < 5.6e9) rank = 'Mata, Emille Jerome G. ';
+        else if (absBaseValue < 6.25e9) rank = 'Maylem, Lysander Rei Gabriel C. ';
+        else if (absBaseValue < 7e9) rank = 'Mendoza, Angela Louise P. ';
+        else if (absBaseValue < 7.5e9) rank = 'Mendoza, Keisha Franchesca B. ';
+        else if (absBaseValue < 8.3e9) rank = 'Mendoza, Princess Thea V. ';
+        else if (absBaseValue < 8.8e9) rank = 'Mercado, Lorraine C. ';
+        else if (absBaseValue < 9.5e9) rank = 'Milanes, Carl Joseph K. ';
+        else if (absBaseValue < 1e10) rank = 'Miranda, Werilein C. ';
+        else if (absBaseValue < 1.24e10) rank = 'Mojica, James Daniel S. ';
+        else if (absBaseValue < 1.5e10) rank = 'Montederamos, Angel S. ';
+        else if (absBaseValue < 1.7e10) rank = 'Montemayor, Gaddiel Phin S. ';
+        else if (absBaseValue < 2e10) rank = 'Montesines, Matthew T. ';
+        else if (absBaseValue < 2.3e10) rank = 'Monzon, Liam Zander L. ';
+        else if (absBaseValue < 2.5e10) rank = 'Moon, Alouissa Marie N. ';
+        else if (absBaseValue < 2.65e10) rank = 'Morales, Aaliyah May Dominique C. ';
+        else if (absBaseValue < 2.8e10) rank = 'Moreno, Joeren Trace V. ';
+        else if (absBaseValue < 3.15e10) rank = 'Mulawin, Francis Jerome M. ';
+        else if (absBaseValue < 3.5e10) rank = 'Obnial, Jay-M Evan A. ';
+        else if (absBaseValue < 3.9e10) rank = 'Ogues, Stephen Nathan T. ';
+        else if (absBaseValue < 4.2e10) rank = 'Olete, Raine Saphire L. ';
+        else if (absBaseValue < 4.8e10) rank = 'Orcullo, Yuan Ryle DV. ';
+        else if (absBaseValue < 5.5e10) rank = 'Orozco, Carlisle John S. ';
+        else if (absBaseValue < 6.4e10) rank = 'Padre, Gian Matthew R. ';
+        else if (absBaseValue < 7e10) rank = 'Paiton, Xeylia Johan M. ';
+        else if (absBaseValue < 7.5e10) rank = 'Pakingan, Ashley James D. ';
+        else if (absBaseValue < 7.9e10) rank = 'Palado, Maia Janai V. ';
+        else if (absBaseValue < 8.25e10) rank = 'Parado, Ma. Sophia Yzabel T. ';
+        else if (absBaseValue < 8.5e10) rank = 'Parnala, Janae Kyrsten L. ';
+        else if (absBaseValue < 9e10) rank = 'Parnala, Janus Kyller L. ';
+        else if (absBaseValue < 9.6e10) rank = 'Pastor, Olga Denise G. ';
+        else if (absBaseValue < 1e11) rank = 'Patlin, Louise Nicole P. ';
+        else if (absBaseValue < 1.14e11) rank = 'Pedernal, Dan Philip B. ';
+        else if (absBaseValue < 1.3e11) rank = 'Pedida, Keisha Jinn V. ';
+        else if (absBaseValue < 1.5e11) rank = 'Peñalba, Frances Hailey T. ';
+        else if (absBaseValue < 1.77e11) rank = 'Peñalosa, Matthew Jisaac J.';
+        else if (absBaseValue < 2e11) rank = 'Peredo, Learsi Isabelle G. ';
+        else if (absBaseValue < 2.22e11) rank = 'Perez, Jan Matthew A. ';
+        else if (absBaseValue < 2.5e11) rank = 'Plandes, Unofranco Hijo M. ';
+        else if (absBaseValue < 2.75e11) rank = 'Ponteres, Pearl Trexie P. ';
+        else if (absBaseValue < 3e11) rank = 'Prieto, Fritz Dhandrei T. ';
+        else if (absBaseValue < 3.45e11) rank = 'Primero, Angelica Marie Nicole DC. ';
+        else if (absBaseValue < 3.77e11) rank = 'Quinto, Aleighna Mishca';
+        else if (absBaseValue < 4e11) rank = 'Quinto, Chloe Mitzy P. ';
+        else if (absBaseValue < 4.7e11) rank = 'Quinto, Jaycie Angela G. ';
+        else if (absBaseValue < 5e11) rank = 'Ramones, Vicsent Psalms P. ';
+        else if (absBaseValue < 5.6e11) rank = 'Ramos, Kirk Wesley Howell C. ';
+        else if (absBaseValue < 6.25e11) rank = 'Ramos, Marky T. ';
+        else if (absBaseValue < 6.66e11) rank = 'Ramos, Rian Sarielle D. ';
+        else if (absBaseValue < 7.23e11) rank = 'Ramos, Roxy Rei S. ';
+        else if (absBaseValue < 7.77e11) rank = 'Reondanga, Jeanella May N. ';
+        else if (absBaseValue < 8.35e11) rank = 'Reondanga, Junpyo N. ';
+        else if (absBaseValue < 9.11e11) rank = 'Repiso, Emmanuel Laurence G. ';
+        else if (absBaseValue < 9.6e11) rank = 'Retanal, Caleb Kyle M. ';
+        else if (absBaseValue < 1e12) rank = 'Retirado, Angela Marielle S. ';
+        else if (absBaseValue < 1.1e12) rank = 'Revidizo, Giel Daniella B. ';
+        else if (absBaseValue < 1.3e12) rank = 'Reyes, Christian Grace DC. ';
+        else if (absBaseValue < 1.5e12) rank = 'Reyes, Kesha Dixie A. ';
+        else if (absBaseValue < 1.8e12) rank = 'Reyes, Zian Miguel J. ';
+        else if (absBaseValue < 2e12) rank = 'Rodolfo, Denize Leigh G. ';
+        else if (absBaseValue < 2.3e12) rank = 'Rodolfo, Dwayne Xian G. ';
+        else if (absBaseValue < 2.5e12) rank = 'Rodriguez, Maverich S. ';
+        else if (absBaseValue < 2.75e12) rank = 'Rodriguez, Rhianna Thea O. ';
+        else if (absBaseValue < 3e12) rank = 'Rosete, Alfa Kacia B. ';
+        else if (absBaseValue < 3.4e12) rank = 'Ruales, Kent Rzen L. ';
+        else if (absBaseValue < 3.7e12) rank = 'Sacdalan, Hailey Rein S.';
+        else if (absBaseValue < 4e12) rank = 'Salamat, Ivan Matthew R. ';
+        else if (absBaseValue < 4.5e12) rank = 'Sanchez, Elizabeth Bea LT. ';
+        else if (absBaseValue < 5e12) rank = 'Sanchez, Precious Angela I. ';
+        else if (absBaseValue < 5.2e12) rank = 'Sanchez, Vonn Allan M. ';
+        else if (absBaseValue < 5.5e12) rank = 'Sañez, Fiarra Edrielle P. ';
+        else if (absBaseValue < 6e12) rank = 'Sangkula, Ana Sophia V. ';
+        else if (absBaseValue < 6.6e12) rank = 'Santos, Diniel Mihr R. ';
+        else if (absBaseValue < 7e12) rank = 'Santos, Mark Miguel E. ';
+        else if (absBaseValue < 8e12) rank = 'Santos, Nepthaleigh Raven R. ';
+        else if (absBaseValue < 9e12) rank = 'Sapinoso, Althea Isabelle C. ';
+        else if (absBaseValue < 9.7e12) rank = 'Sardido, Adrian Emil C. ';
+        else if (absBaseValue < 1e13) rank = 'Sarinas, Gerald L. ';
+        else if (absBaseValue < 1.3e13) rank = 'Sarinas, Ronald L. ';
+        else if (absBaseValue < 1.5e13) rank = 'Sarmiento, Carlo Inigo T. ';
+        else if (absBaseValue < 1.75e13) rank = 'Sarmiento, Garth Gabriel A. ';
+        else if (absBaseValue < 2e13) rank = 'Saromo, Martha Louise A. ';
+        else if (absBaseValue < 2.4e13) rank = 'Sasing, Geanna Marcie R. ';
+        else if (absBaseValue < 2.7e13) rank = 'Saunar, Vayne Aelaris O. ';
+        else if (absBaseValue < 3e13) rank = 'See, Princess Faith Y. ';
+        else if (absBaseValue < 3.3e13) rank = 'Seeland, Vaniah Kalil F. ';
+        else if (absBaseValue < 3.8e13) rank = 'Sisante, Luke Jubal C. ';
+        else if (absBaseValue < 4.5e13) rank = 'Soliman, Lucian N. ';
+        else if (absBaseValue < 5.1e13) rank = 'Solis, Joanne R. ';
+        else if (absBaseValue < 5.5e13) rank = 'Songuad, Marcus B. ';
+        else if (absBaseValue < 6e13) rank = 'Sto. Domingo, Cathreen Sophia N. ';
+        else if (absBaseValue < 6.4e13) rank = 'Sto. Domingo, Cathreen Sophia N. ';
+        else if (absBaseValue < 7e13) rank = 'Sy, Andrew Jacob D. ';
+        else if (absBaseValue < 7.7e13) rank = 'Sy, Andrew Jacob D. ';
+        else if (absBaseValue < 8e13) rank = 'Tabang, Gilbert Jr B. ';
+        else if (absBaseValue < 8.6e13) rank = 'Tamayo, Kiel Matthew A. ';
+        else if (absBaseValue < 9.1e13) rank = 'Tamayo, Kyrie Miguel Q. ';
+        else if (absBaseValue < 9.5e13) rank = 'Tambago, Terrence Lloyd P. ';
+        else if (absBaseValue < 9.8e13) rank = 'Tan, Jian Chen E. ';
+        else if (absBaseValue < 1e14) rank = 'Tavares, John Matthew A. ';
+        else if (absBaseValue < 1.11e14) rank = 'Tayong, Athan Clad R. ';
+        else if (absBaseValue < 1.32e14) rank = 'Tenorio, Erika Mae R. ';
+        else if (absBaseValue < 1.5e14) rank = 'Tiania, Hyelenna T. ';
+        else if (absBaseValue < 1.66e14) rank = 'Tirona, Kal - El Josiah';
+        else if (absBaseValue < 1.9e14) rank = 'Toldoya, Christine Anne Y. ';
+        else if (absBaseValue < 2e14) rank = 'Tolentino, Allister Blake M. ';
+        else if (absBaseValue < 2.22e14) rank = 'Topacio, John Radcliffe W. ';
+        else if (absBaseValue < 2.46e14) rank = 'Topacio, Princess Izabella C. ';
+        else if (absBaseValue < 2.82e14) rank = 'Topacio, Rameses R. ';
+        else if (absBaseValue < 3.15e14) rank = 'Torres, Angel Grace A. ';
+        else if (absBaseValue < 3.44e14) rank = 'Torres, Jaime Alfonso R. ';
+        else if (absBaseValue < 3.8e14) rank = 'Trinidad, Zuriel A. ';
+        else if (absBaseValue < 4.2e14) rank = 'Tsuda, Ryusei S. ';
+        else if (absBaseValue < 4.77e14) rank = 'Tumulak, Jaiza Cezanbe M. ';
+        else if (absBaseValue < 5e14) rank = 'Uba, Mikko O. ';
+        else if (absBaseValue < 5.5e14) rank = 'Untalan, Nathan M. ';
+        else if (absBaseValue < 6e14) rank = 'Urgino, Zia Yvonne D. ';
+        else if (absBaseValue < 6.56e14) rank = 'Valdez, Venice Khane';
+        else if (absBaseValue < 7.23e14) rank = 'Vedar, Yna Viella L. ';
+        else if (absBaseValue < 8e14) rank = 'Velasco, Tyrone Jake M.';
+        else if (absBaseValue < 9e14) rank = 'Veneracion, Juan Miguel';
+        else if (absBaseValue < 1e15) rank = 'Venturanza, Azriel Xyle G. ';
+        else if (absBaseValue < 1.4e15) rank = 'Veriño, Pearl Rainne P. ';
+        else if (absBaseValue < 1.6e15) rank = 'Villafuerte, David Samuel A. ';
+        else if (absBaseValue < 1.8e15) rank = 'Villas, Steven Wayne B. ';
+        else if (absBaseValue < 2e15) rank = 'Virata, James Evanz M. ';
+        else if (absBaseValue < 2.3e15) rank = 'Virata, Jayriel Casey R. ';
+        else if (absBaseValue < 2.7e15) rank = 'Viray, Calistha Bellamy C. ';
+        else if (absBaseValue < 3.1e15) rank = 'Walde, Leahnn Rei DR. ';
+        else if (absBaseValue < 3.6e15) rank = 'Watanabe, Mei Mckenzie G. ';
+        else if (absBaseValue < 4.3e15) rank = 'Yaun, Rexzle Seth O. ';
+        else if (absBaseValue < 5e15) rank = 'Yulo, Charlize Keziah S. ';
+        else if (absBaseValue < 6e15) rank = 'Yumang, Stephen Myckel B.';
+        else if (absBaseValue < 7e15) rank = 'Yumang, Wojtyla Kurt A. ';
+        else if (absBaseValue < 7.5e15) rank = 'Zaballa, Nicole Marie O.';
+        
+
+        else rank = 'Zamudio, Keight Ashley M.';
+
+        if (absBaseValue >= 7.5e15) alert ("bro what");
+        let dispValue;
+        if (typeof displayValue === 'number') {
+          if (isReverted) {
+            // Show as scientific notation for reverted rolls (e.g., 1/1000 = 1e-3)
+            const exponent = Math.floor(Math.log10(Math.abs(displayValue)));
+            const mantissa = Math.abs(displayValue) / Math.pow(10, exponent);
+            dispValue = `${mantissa.toFixed(2)}e${exponent}`;
+          } else if (Math.abs(displayValue) >= 1e21) {
+            dispValue = displayValue.toExponential(16);
+          } else if (Math.abs(displayValue) >= 1000) {
+            // Format with commas
+            dispValue = displayValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            
+          } else {
+            dispValue = displayValue.toFixed(2);
+          }
+        } else {
+          // Keep text values as-is (for ranks like NOTHINGNESS, Imaginary, etc.)
+          dispValue = displayValue;
+        }
+
+        // Apply variant multiplier only to numeric display values (skip text-based special ranks)
+        if (typeof displayValue !== 'string' && variantMultiplier !== 1) {
+          displayValue = displayValue * variantMultiplier;
+          const absDisplayValue = Math.abs(displayValue);
+          
+          // Recalculate dispValue after variants
+          if (isReverted) {
+            const exponent = Math.floor(Math.log10(Math.abs(displayValue)));
+            const mantissa = Math.abs(displayValue) / Math.pow(10, exponent);
+            dispValue = `${mantissa.toFixed(2)}e${exponent}`;
+          } else if (Math.abs(displayValue) >= 1e21) {
+            dispValue = displayValue.toExponential(16);
+          } else if (Math.abs(displayValue) >= 1000) {
+            dispValue = displayValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+          } else {
+            dispValue = displayValue.toFixed(2);
+          }
+        }
+        
+        const absDisplayValue = typeof displayValue === 'number' ? Math.abs(displayValue) : 0;
+
+        let result = '';
+        let invVariants = '';
+        if (variantText) {
+          result += variantText;
+          invVariants = variantText.trim();
+        }
+        if (isNegative) result += '[NEGATIVE] ';
+        if (isReverted) result += '[REVERTED] ';
+        const color = getColor(absDisplayValue);
+        
+        // Create clickable rank for inventory
+        const rankButton = `<button class="rank-button" id="rank-btn-ROLLINDEX" onclick="acceptRoll(ROLLINDEX)">${rank}</button>`;
+
+        if (['Lmao','FUNNY','NICE','nil','NOTHINGNESS','PERFECTIONIST','In im table ?!?!?','INSANE','Common : DIVINITY','Imaginary','???UNKNOWN???'].includes(rank)) {
+          result += `<span class="bold" style="color:${color};">You rolled a/an RANKBUTTON (${dispValue})!</span>`;
+        } else {
+          result += `<span style="color:${color};">
+          RANKBUTTON 
+          ${dispValue} RNG </span>`;
+        }
+
+        
+        if (variantMultiplier >= 1e13) alert ("An aura with a variant rng of " + variantMultiplier + " just appeared yoooo");
+        
+        if (absDisplayValue >= 1e15) alert ("Ayo dawg, a "+ rank + " with variants -" + invVariants + "- and a rarity of " + dispValue + " just dropped in yo roller wuuhhh");
+        
+        // Cooldown based on display value (with variants)
+        let cooldown = 0;
+        if (absDisplayValue >= 1e33) cooldown = 32768000;
+        else if (absDisplayValue >= 1e30) cooldown = 16384000;
+        else if (absDisplayValue >= 1e29) cooldown = 8192000;
+        else if (absDisplayValue >= 1e27) cooldown = 4096000;
+        else if (absDisplayValue >= 1e26) cooldown = 2048000;
+        else if (absDisplayValue >= 1e24) cooldown = 1024000;
+        else if (absDisplayValue >= 1e23) cooldown = 512000;
+        else if (absDisplayValue >= 1e21) cooldown = 256000;
+        else if (absDisplayValue >= 1e20) cooldown = 128000;
+        else if (absDisplayValue >= 1e18) cooldown = 64000;
+        else if (absDisplayValue >= 1e17) cooldown = 32000;
+        else if (absDisplayValue >= 1e15) cooldown = 16000;
+        
+        
+        
+        
+        
+
+        const inventoryData = {
+          variants: invVariants,
+          displayValue: dispValue,
+          rank: rank,
+          color: color
+          
+        };
+
+        return { result, cooldown, inventoryData };
+      }
+
+ toggleMerchantBtn.addEventListener('click', () => {
+        const sections = [merchantSection, itemInventorySection];
+        if (merchantSection.style.display === 'none') {
+          sections.forEach(s => s.style.display = 'none');
+          merchantSection.style.display = 'block';
+          renderMerchant();
+        } else {
+          merchantSection.style.display = 'none';
+        }
+      });
+
+      toggleItemInventoryBtn.addEventListener('click', () => {
+        const sections = [merchantSection, itemInventorySection];
+        if (itemInventorySection.style.display === 'none') {
+          sections.forEach(s => s.style.display = 'none');
+          itemInventorySection.style.display = 'block';
+          renderItemInventory();
+        } else {
+          itemInventorySection.style.display = 'none';
+        }
+      });
+
+      rollOnceBtn.addEventListener('click', () => {
+        if (isCooldown) return;
+        let maxCooldown = 0;
+        let output = '';
+        multiRolls = [];
+        totalRolls++;
+        saveInventory();
+        updateRollCounter();
+        const roll = rollOnce();
+        multiRolls.push(roll.inventoryData);
+        
+        // Replace ROLLINDEX with 0 and RANKBUTTON with the actual button
+        let displayResult = roll.result.replace(/ROLLINDEX/g, '0').replace(/RANKBUTTON/g, roll.inventoryData ? 
+          `<button class="rank-button" id="rank-btn-0" onclick="acceptRoll(0)">${roll.inventoryData.rank}</button>` : 
+          roll.inventoryData ? roll.inventoryData.rank : '???');
+        
+        resultsDiv.innerHTML = displayResult;
+        if (roll.cooldown > 0) setCooldown(roll.cooldown);
+      });
+
+      rollMultipleBtn.addEventListener('click', () => {
+        if (isCooldown) return;
+        let maxCooldown = 0;
+        let output = '';
+        multiRolls = [];
+        
+        for (let i = 0; i < 1000; i++) {
+        totalRolls++;
+          updateRollCounter();
+          const roll = rollOnce();
+          multiRolls.push(roll.inventoryData);
+        
+          // Replace ROLLINDEX with actual index and RANKBUTTON with the button
+          let displayResult = roll.result.replace(/ROLLINDEX/g, i.toString()).replace(/RANKBUTTON/g, roll.inventoryData ? 
+            `<button class="rank-button" id="rank-btn-${i}" onclick="acceptRoll(${i})">${roll.inventoryData.rank}</button>` : 
+            '???');
+            
+          
+          output += `<div class="roll-line">${displayResult}</div>`;
+          if (roll.cooldown > maxCooldown) maxCooldown = roll.cooldown;
+        }
+        
+        resultsDiv.innerHTML = output;
+        if (maxCooldown > 0) setCooldown(maxCooldown);
+        setInterval (function rollOnce() {output += "e"}, 1000);
+      });
+
+      // Make acceptRoll available globally
+      window.acceptRoll = acceptRoll;
+
+      // Initialize
+      loadInventory();
+      renderMerchant();
+    </script>
+  </body>
+</html>
